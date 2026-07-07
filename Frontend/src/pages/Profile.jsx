@@ -43,7 +43,7 @@ function Profile() {
     >
       <div style={{ width: "100%", maxWidth: "550px" }}>
         <div className="text-center mb-4">
-          <h2 className="fw-bold mb-1">Profile</h2>
+          <h2 className="fw-bold mb-1 text-primary">Profile</h2>
 
           <p className="text-muted mb-0">
             View your account information

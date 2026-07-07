@@ -81,7 +81,7 @@ function Settings() {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="fw-bold mb-1">Settings</h2>
+        <h2 className="fw-bold mb-1 text-primary">Settings</h2>
         <p className="text-muted mb-0">
           Manage your organization and inventory preferences
         </p>
