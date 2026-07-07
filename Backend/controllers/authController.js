@@ -40,9 +40,6 @@ export const signup = async (req, res) => {
         organizationId: organization.id,
       },
       process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      }
     );
 
     return res.status(201).json({

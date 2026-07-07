@@ -4,22 +4,34 @@ import api from "../services/api";
 function Dashboard() {
   const [dashboard, setDashboard] = useState({
     totalProducts: 0,
-    totalStock: 0,
     lowStockCount: 0,
     lowStockProducts: [],
   });
 
+  const [totalStock, setTotalStock] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const response = await api.get("/dashboard");
-        setDashboard(response.data);
+        const [dashboardResponse, productsResponse] = await Promise.all([
+          api.get("/dashboard"),
+          api.get("/products"),
+        ]);
+
+        setDashboard(dashboardResponse.data);
+
+        const stock = productsResponse.data.products.reduce(
+          (total, product) => total + product.quantity,
+          0
+        );
+
+        setTotalStock(stock);
       } catch (error) {
         setError(
-          error.response?.data?.message || "Failed to load dashboard"
+          error.response?.data?.message ||
+            "Failed to load dashboard"
         );
       } finally {
         setLoading(false);
@@ -37,16 +49,25 @@ function Dashboard() {
     <div>
       <div className="mb-4">
         <h2 className="fw-bold">Dashboard</h2>
-        <p className="text-muted">Overview of your inventory</p>
+        <p className="text-muted">
+          Overview of your inventory
+        </p>
       </div>
 
-      {error && <div className="alert alert-danger">{error}</div>}
+      {error && (
+        <div className="alert alert-danger">
+          {error}
+        </div>
+      )}
 
       <div className="row g-4 mb-4">
         <div className="col-md-6">
           <div className="card border-0 shadow-sm h-100">
             <div className="card-body">
-              <p className="text-muted mb-2">Total Products</p>
+              <p className="text-muted mb-2">
+                Total Products
+              </p>
+
               <h2 className="fw-bold mb-0">
                 {dashboard.totalProducts}
               </h2>
@@ -62,7 +83,7 @@ function Dashboard() {
               </p>
 
               <h2 className="fw-bold mb-0">
-                {dashboard.totalStock}
+                {totalStock}
               </h2>
             </div>
           </div>

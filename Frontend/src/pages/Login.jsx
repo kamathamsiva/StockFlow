@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
-
+import {Navigate} from "react-router-dom";
 function Login() {
+
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+  if (token) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const [formData, setFormData] = useState({
     email: "",
