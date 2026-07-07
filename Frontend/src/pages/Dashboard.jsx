@@ -48,7 +48,7 @@ function Dashboard() {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="fw-bold">Dashboard</h2>
+        <h2 className="fw-bold mb-1 text-primary">Dashboard</h2>
         <p className="text-muted">
           Overview of your inventory
         </p>
