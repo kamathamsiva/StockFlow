@@ -88,7 +88,7 @@ function Dashboard() {
           </div>
         </div>
 
-        <div className="col-md-6 text-dark ">
+        <div className="col-md-6 mb-0 text-dark ">
           <div className="card border-0 shadow-sm h-100">
             <div className="card-body">
               <p className="text-muted">
