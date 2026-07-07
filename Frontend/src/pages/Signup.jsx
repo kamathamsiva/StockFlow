@@ -1,13 +1,19 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import api from "../services/api";
 
 function Signup() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     organizationName: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
+
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -16,15 +22,42 @@ function Signup() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
+      setError("Passwords do not match");
       return;
     }
 
-    console.log(formData);
+    setLoading(true);
+
+    try {
+      const response = await api.post("/auth/signup", {
+        organizationName: formData.organizationName,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      localStorage.setItem("token", response.data.token);
+
+      if (response.data.user) {
+        localStorage.setItem(
+          "user",
+          JSON.stringify(response.data.user)
+        );
+      }
+
+      navigate("/dashboard");
+    } catch (error) {
+      setError(
+        error.response?.data?.message ||
+          "Failed to create account"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -33,13 +66,18 @@ function Signup() {
         className="card shadow border-0 p-4"
         style={{ width: "450px" }}
       >
-        {/* Left-aligned heading */}
         <div className="mb-4">
           <h2 className="fw-bold mb-2">StockFlow</h2>
           <p className="text-muted mb-0">
             Create your inventory account
           </p>
         </div>
+
+        {error && (
+          <div className="alert alert-danger">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
@@ -109,8 +147,9 @@ function Signup() {
           <button
             type="submit"
             className="btn btn-primary w-100"
+            disabled={loading}
           >
-            Create Account
+            {loading ? "Creating Account..." : "Create Account"}
           </button>
         </form>
 

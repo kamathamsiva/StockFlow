@@ -9,7 +9,7 @@ function Navbar() {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg bg-dark navbar-dark px-4">
+    <nav className="navbar navbar-expand-lg bg-dark navbar-dark px-4 sticky-top">
       <NavLink className="navbar-brand fw-bold" to="/dashboard">
         StockFlow
       </NavLink>
@@ -25,6 +25,10 @@ function Navbar() {
 
         <NavLink className="nav-link" to="/settings">
           Settings
+        </NavLink>
+
+        <NavLink className="nav-link" to="/profile">
+        Profile
         </NavLink>
 
         <button

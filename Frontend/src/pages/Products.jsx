@@ -1,42 +1,59 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import api from "../services/api";
 
 function Products() {
   const [search, setSearch] = useState("");
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const products = [
-    {
-      id: 1,
-      name: "Wireless Mouse",
-      sku: "WM-001",
-      quantity: 3,
-      threshold: 5,
-      sellingPrice: 799,
-    },
-    {
-      id: 2,
-      name: "USB Keyboard",
-      sku: "KB-002",
-      quantity: 20,
-      threshold: 5,
-      sellingPrice: 1299,
-    },
-  ];
-
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(search.toLowerCase()) ||
-    product.sku.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const handleDelete = (name) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete ${name}?`
-    );
-
-    if (confirmed) {
-      console.log("Delete product:", name);
+  const fetchProducts = async () => {
+    try {
+      const response = await api.get("/products");
+      setProducts(response.data.products);
+    } catch (error) {
+      setError(
+        error.response?.data?.message || "Failed to load products"
+      );
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const filteredProducts = products.filter(
+    (product) =>
+      product.name.toLowerCase().includes(search.toLowerCase()) ||
+      product.sku.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleDelete = async (product) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${product.name}?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await api.delete(`/products/${product.id}`);
+
+      setProducts((currentProducts) =>
+        currentProducts.filter((item) => item.id !== product.id)
+      );
+    } catch (error) {
+      setError(
+        error.response?.data?.message || "Failed to delete product"
+      );
+    }
+  };
+
+  if (loading) {
+    return <p>Loading products...</p>;
+  }
 
   return (
     <div>
@@ -52,6 +69,10 @@ function Products() {
           + Add Product
         </Link>
       </div>
+
+      {error && (
+        <div className="alert alert-danger">{error}</div>
+      )}
 
       <div className="card border-0 shadow-sm">
         <div className="card-body">
@@ -78,8 +99,11 @@ function Products() {
 
               <tbody>
                 {filteredProducts.map((product) => {
+                  const threshold =
+                    product.lowStockThreshold ?? 8;
+
                   const isLowStock =
-                    product.quantity <= product.threshold;
+                    product.quantity <= threshold;
 
                   return (
                     <tr key={product.id}>
@@ -98,11 +122,15 @@ function Products() {
                               : "bg-success"
                           }`}
                         >
-                          {isLowStock ? "Low Stock" : "In Stock"}
+                          {isLowStock
+                            ? "Low Stock"
+                            : "In Stock"}
                         </span>
                       </td>
 
-                      <td>₹{product.sellingPrice}</td>
+                      <td>
+                        ₹{Number(product.sellingPrice || 0).toFixed(2)}
+                      </td>
 
                       <td>
                         <Link
@@ -114,7 +142,7 @@ function Products() {
 
                         <button
                           className="btn btn-outline-danger btn-sm"
-                          onClick={() => handleDelete(product.name)}
+                          onClick={() => handleDelete(product)}
                         >
                           Delete
                         </button>

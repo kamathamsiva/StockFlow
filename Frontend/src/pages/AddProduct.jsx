@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
 function AddProduct() {
   const navigate = useNavigate();
@@ -14,6 +15,9 @@ function AddProduct() {
     lowStockThreshold: "",
   });
 
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -21,13 +25,43 @@ function AddProduct() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("New product:", formData);
-    alert("Product form submitted successfully");
+    setError("");
+    setLoading(true);
 
-    navigate("/products");
+    try {
+      const productData = {
+        name: formData.name,
+        sku: formData.sku,
+        description: formData.description,
+        quantity: Number(formData.quantity),
+        costPrice: formData.costPrice
+          ? Number(formData.costPrice)
+          : 0,
+        sellingPrice: formData.sellingPrice
+          ? Number(formData.sellingPrice)
+          : 0,
+      };
+
+      if (formData.lowStockThreshold !== "") {
+        productData.lowStockThreshold = Number(
+          formData.lowStockThreshold
+        );
+      }
+
+      await api.post("/products", productData);
+
+      navigate("/products");
+    } catch (error) {
+      setError(
+        error.response?.data?.message ||
+          "Failed to add product"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -38,6 +72,12 @@ function AddProduct() {
           Add a new product to your inventory
         </p>
       </div>
+
+      {error && (
+        <div className="alert alert-danger">
+          {error}
+        </div>
+      )}
 
       <div className="card border-0 shadow-sm">
         <div className="card-body p-4">
@@ -158,6 +198,7 @@ function AddProduct() {
                 type="button"
                 className="btn btn-outline-secondary"
                 onClick={() => navigate("/products")}
+                disabled={loading}
               >
                 Cancel
               </button>
@@ -165,8 +206,9 @@ function AddProduct() {
               <button
                 type="submit"
                 className="btn btn-primary"
+                disabled={loading}
               >
-                Add Product
+                {loading ? "Adding..." : "Add Product"}
               </button>
             </div>
           </form>

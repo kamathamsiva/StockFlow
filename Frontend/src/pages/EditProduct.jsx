@@ -1,19 +1,60 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import api from "../services/api";
 
 function EditProduct() {
   const navigate = useNavigate();
   const { id } = useParams();
 
   const [formData, setFormData] = useState({
-    name: "Wireless Mouse",
-    sku: "WM-001",
-    description: "Wireless Bluetooth mouse",
-    quantity: 3,
-    costPrice: 500,
-    sellingPrice: 799,
-    lowStockThreshold: 5,
+    name: "",
+    sku: "",
+    description: "",
+    quantity: "",
+    costPrice: "",
+    sellingPrice: "",
+    lowStockThreshold: "",
   });
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const response = await api.get("/products");
+
+        const product = response.data.products.find(
+          (item) => String(item.id) === String(id)
+        );
+
+        if (!product) {
+          setError("Product not found");
+          return;
+        }
+
+        setFormData({
+          name: product.name || "",
+          sku: product.sku || "",
+          description: product.description || "",
+          quantity: product.quantity ?? "",
+          costPrice: product.costPrice ?? "",
+          sellingPrice: product.sellingPrice ?? "",
+          lowStockThreshold: product.lowStockThreshold ?? "",
+        });
+      } catch (error) {
+        setError(
+          error.response?.data?.message ||
+            "Failed to load product"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
 
   const handleChange = (e) => {
     setFormData({
@@ -22,15 +63,44 @@ function EditProduct() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("Product ID:", id);
-    console.log("Updated product:", formData);
+    setError("");
+    setSaving(true);
 
-    alert("Product updated successfully");
-    navigate("/products");
+    try {
+      const productData = {
+        name: formData.name,
+        sku: formData.sku,
+        description: formData.description,
+        quantity: Number(formData.quantity),
+        costPrice: Number(formData.costPrice || 0),
+        sellingPrice: Number(formData.sellingPrice || 0),
+      };
+
+      if (formData.lowStockThreshold !== "") {
+        productData.lowStockThreshold = Number(
+          formData.lowStockThreshold
+        );
+      }
+
+      await api.put(`/products/${id}`, productData);
+
+      navigate("/products");
+    } catch (error) {
+      setError(
+        error.response?.data?.message ||
+          "Failed to update product"
+      );
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return <p>Loading product...</p>;
+  }
 
   return (
     <div>
@@ -41,13 +111,21 @@ function EditProduct() {
         </p>
       </div>
 
+      {error && (
+        <div className="alert alert-danger">
+          {error}
+        </div>
+      )}
+
       <div className="card border-0 shadow-sm">
         <div className="card-body p-4">
           <form onSubmit={handleSubmit}>
             <div className="row g-3">
-
               <div className="col-md-6">
-                <label className="form-label">Product Name</label>
+                <label className="form-label">
+                  Product Name
+                </label>
+
                 <input
                   type="text"
                   name="name"
@@ -60,6 +138,7 @@ function EditProduct() {
 
               <div className="col-md-6">
                 <label className="form-label">SKU</label>
+
                 <input
                   type="text"
                   name="sku"
@@ -71,7 +150,10 @@ function EditProduct() {
               </div>
 
               <div className="col-12">
-                <label className="form-label">Description</label>
+                <label className="form-label">
+                  Description
+                </label>
+
                 <textarea
                   name="description"
                   className="form-control"
@@ -85,6 +167,7 @@ function EditProduct() {
                 <label className="form-label">
                   Quantity on Hand
                 </label>
+
                 <input
                   type="number"
                   name="quantity"
@@ -100,6 +183,7 @@ function EditProduct() {
                 <label className="form-label">
                   Low Stock Threshold
                 </label>
+
                 <input
                   type="number"
                   name="lowStockThreshold"
@@ -111,7 +195,10 @@ function EditProduct() {
               </div>
 
               <div className="col-md-6">
-                <label className="form-label">Cost Price</label>
+                <label className="form-label">
+                  Cost Price
+                </label>
+
                 <input
                   type="number"
                   name="costPrice"
@@ -124,7 +211,10 @@ function EditProduct() {
               </div>
 
               <div className="col-md-6">
-                <label className="form-label">Selling Price</label>
+                <label className="form-label">
+                  Selling Price
+                </label>
+
                 <input
                   type="number"
                   name="sellingPrice"
@@ -135,7 +225,6 @@ function EditProduct() {
                   onChange={handleChange}
                 />
               </div>
-
             </div>
 
             <div className="d-flex justify-content-end gap-2 mt-4">
@@ -143,12 +232,17 @@ function EditProduct() {
                 type="button"
                 className="btn btn-outline-secondary"
                 onClick={() => navigate("/products")}
+                disabled={saving}
               >
                 Cancel
               </button>
 
-              <button type="submit" className="btn btn-primary">
-                Save Changes
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={saving}
+              >
+                {saving ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </form>
