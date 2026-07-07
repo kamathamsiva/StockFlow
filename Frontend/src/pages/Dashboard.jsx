@@ -68,7 +68,7 @@ function Dashboard() {
                 Total Products
               </p>
 
-              <h2 className="fw-bold mb-0">
+              <h2 className="fw-bold">
                 {dashboard.totalProducts}
               </h2>
             </div>
@@ -78,7 +78,7 @@ function Dashboard() {
         <div className="col-md-6">
           <div className="card border-0 shadow-sm h-100">
             <div className="card-body">
-              <p className="text-muted mb-2">
+              <p className="text-muted">
                 Total Stock Quantity
               </p>
 
