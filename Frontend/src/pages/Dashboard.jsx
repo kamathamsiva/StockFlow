@@ -88,14 +88,14 @@ function Dashboard() {
           </div>
         </div>
 
-        <div className="fw-bold mb-0 text-dark ">
+        <div className="col-md-6 text-dark ">
           <div className="card border-0 shadow-sm h-100">
             <div className="card-body">
               <p className="text-muted">
                 Total Stock Quantity
               </p>
 
-              <h2 className="fw-bold mb-0">
+              <h2 className="fw-bold mb-0 text-dark">
                 {totalStock}
               </h2>
             </div>
